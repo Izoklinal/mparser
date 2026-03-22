@@ -11,21 +11,10 @@ void divide(list_f* nums, list_c* ops);
 void sum(list_f* nums, list_c* ops);
 float do_math(list_f* nums, list_c* ops);
 
-// 012345678
-// 2*(3+4)-1
-//   ^
-// 
-// 012345
-// 3+4)-1
-//    ^
-// return i + 1
-
-static int countOps = 0;
-
 int main() {
     list_f nums = {0};
     list_c ops = {0};
-    string source = string_init("2+5^(4/2)-4");
+    string source = string_init("3+5^(4/(1+1))/2");
 
     int count_op = string_count_val(&source, '(');
     int count_cp = string_count_val(&source, ')');
@@ -39,7 +28,6 @@ int main() {
     bool isNextNegative = false;
     for (size_t i = 0; i < source.size; i++)
     {
-        countOps++;
         char c = source.str[i];
         if (!isdigit(c)) {
             bool isValidChar = false;
@@ -88,11 +76,18 @@ int main() {
 
     float result = do_math(&nums, &ops);
 
-    printf("Result of equation = %f\nCount of operations: %d", result, countOps);
+    printf("Result of equation = %f\n", result);
 
     return 0;
 }
 
+// 2+5^(4/(1+1))-4
+
+// 0123456789
+// 4/(1+1))-4
+
+// 0123456
+// 1+1))-4
 float do_parenthesis(string str, int* shift) {
     list_c ops = {0};
     list_f nums = {0};
@@ -101,7 +96,6 @@ float do_parenthesis(string str, int* shift) {
     bool isNextNegative = false;
     for (size_t i = 0; i < str.size; i++)
     {
-        countOps++;
         (*shift)++;
         char c = str.str[i];
         if (!isdigit(c)) {
@@ -114,12 +108,15 @@ float do_parenthesis(string str, int* shift) {
                 isNextNegative = true;
                 isValidChar = true;
                 c = '+';
-            } else if (c == '+' || c == '*' || c == '/') {
+            } else if (c == '+' || c == '*' || c == '/' || c == '^') {
                 isNextNegative = false;
                 isValidChar = true;
             } else if (c == '(') {
                 string trimmed = string_trim_start(str, i + 1);
-                float num = do_parenthesis(trimmed, shift);
+                int localShift = 0;
+                buffer = do_parenthesis(trimmed, &localShift);
+                (*shift) += localShift;
+                i += localShift;
             } else if (c == ')') {
                 list_f_add(&nums, buffer);
                 break;
@@ -141,14 +138,14 @@ float do_parenthesis(string str, int* shift) {
     // {
     //     printf("%f\n", nums.items[i]);
     // }
-    
+    // float r = do_math(&nums, &ops);
+    // printf("Result of parenthesis: %f\n", r);
     return do_math(&nums, &ops);
 }
 
 void power(list_f* nums, list_c* ops) {
     int idx;
     while((idx = list_c_index_of(ops, '^')) != -1) {
-        countOps++;
         float r = 0;
         list_c_take_at(ops, idx);
         float v1 = list_f_take_at(nums, idx);
@@ -161,7 +158,6 @@ void power(list_f* nums, list_c* ops) {
 void multiply(list_f* nums, list_c* ops) {
     int idx;
     while((idx = list_c_index_of(ops, '*')) != -1) {
-        countOps++;
         float lr = 0;
         list_c_take_at(ops, idx);
         float v1 = list_f_take_at(nums, idx);
@@ -174,7 +170,6 @@ void multiply(list_f* nums, list_c* ops) {
 void divide(list_f* nums, list_c* ops) {
     int idx;
     while((idx = list_c_index_of(ops, '/')) != -1) {
-        countOps++;
         float lr = 0;
         list_c_take_at(ops, idx);
         float v1 = list_f_take_at(nums, idx);
@@ -188,7 +183,6 @@ void sum(list_f* nums, list_c* ops) {
     size_t size = ops->size;
     for (size_t i = 0; i < size; i++)
     {
-        countOps++;
         char op = list_c_shift(ops);
         float v1 = list_f_shift(nums);
         float v2 = list_f_shift(nums);

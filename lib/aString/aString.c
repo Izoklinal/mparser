@@ -20,7 +20,7 @@ string string_trim_start(string str, int idx) {
         return s;
     }
     s.str = &str.str[idx];
-    s.size = s.size - idx;
+    s.size = str.size - idx;
     return s;
 }
 string string_trim_end(string str, int idx) {
@@ -30,7 +30,7 @@ string string_trim_end(string str, int idx) {
         return s;
     }
     s.str = &str.str[str.size - idx];
-    s.size = s.size - idx;
+    s.size = str.size - idx;
     return s;
 }
 
