@@ -14,7 +14,7 @@ float do_math(list_f* nums, list_c* ops);
 int main() {
     list_f nums = {0};
     list_c ops = {0};
-    string source = string_init("3+5^(4/(1+1))/2");
+    string source = string_init("(-2)-(-5)");
 
     int count_op = string_count_val(&source, '(');
     int count_cp = string_count_val(&source, ')');
@@ -26,17 +26,15 @@ int main() {
 
     float buffer = 0;
     bool isNextNegative = false;
+    int blockNegIdx = 0;
     for (size_t i = 0; i < source.size; i++)
     {
         char c = source.str[i];
         if (!isdigit(c)) {
             bool isValidChar = false;
-            if (isNextNegative) {
-                buffer *= -1.0f;
-                isNextNegative = false;
-            }
             if (c == '-') {
                 isNextNegative = true;
+                blockNegIdx = i;
                 isValidChar = true;
                 c = '+';
             } else if (c == '+' || c == '*' || c == '/' || c == '^') {
@@ -45,13 +43,16 @@ int main() {
             } else if (c == '(') {
                 string trimmed = string_trim_start(source, i + 1);
                 int shift = 0;
-                float num = do_parenthesis(trimmed, &shift);
+                buffer = do_parenthesis(trimmed, &shift);
                 i += shift;
-                buffer = num;
                 c = '+';
             }
-
+            
             if (isValidChar) {
+                if (isNextNegative && blockNegIdx != i) {
+                    buffer *= -1.0f;
+                    isNextNegative = false;
+                }
                 list_c_add(&ops, c);
                 list_f_add(&nums, buffer);
                 buffer = 0;
@@ -94,18 +95,16 @@ float do_parenthesis(string str, int* shift) {
 
     float buffer = 0;
     bool isNextNegative = false;
+    int blockNegIdx = 0;
     for (size_t i = 0; i < str.size; i++)
     {
         (*shift)++;
         char c = str.str[i];
         if (!isdigit(c)) {
             bool isValidChar = false;
-            if (isNextNegative) {
-                buffer *= -1.0f;
-                isNextNegative = false;
-            }
             if (c == '-') {
                 isNextNegative = true;
+                blockNegIdx = i;
                 isValidChar = true;
                 c = '+';
             } else if (c == '+' || c == '*' || c == '/' || c == '^') {
@@ -118,11 +117,19 @@ float do_parenthesis(string str, int* shift) {
                 (*shift) += localShift;
                 i += localShift;
             } else if (c == ')') {
+                if (isNextNegative && blockNegIdx != i) {
+                    buffer *= -1.0f;
+                    isNextNegative = false;
+                }
                 list_f_add(&nums, buffer);
                 break;
             }
-
+            
             if (isValidChar) {
+                if (isNextNegative && blockNegIdx != i) {
+                    buffer *= -1.0f;
+                    isNextNegative = false;
+                }
                 list_c_add(&ops, c);
                 list_f_add(&nums, buffer);
                 buffer = 0;
