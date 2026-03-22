@@ -6,6 +6,8 @@
 #include "lib/aString/aString.h"
 
 float do_parenthesis(string str, int* shift);
+void root(list_f* nums, list_c* ops);
+void power(list_f* nums, list_c* ops);
 void multiply(list_f* nums, list_c* ops);
 void divide(list_f* nums, list_c* ops);
 void sum(list_f* nums, list_c* ops);
@@ -14,7 +16,7 @@ float do_math(list_f* nums, list_c* ops);
 int main() {
     list_f nums = {0};
     list_c ops = {0};
-    string source = string_init("(-2)-(-5)");
+    string source = string_init("27v3");
 
     int count_op = string_count_val(&source, '(');
     int count_cp = string_count_val(&source, ')');
@@ -37,7 +39,7 @@ int main() {
                 blockNegIdx = i;
                 isValidChar = true;
                 c = '+';
-            } else if (c == '+' || c == '*' || c == '/' || c == '^') {
+            } else if (c == '+' || c == '*' || c == '/' || c == '^' || c == 'v') {
                 isNextNegative = false;
                 isValidChar = true;
             } else if (c == '(') {
@@ -67,14 +69,6 @@ int main() {
     }
     list_f_add(&nums, buffer);
 
-    // for (size_t i = 0; i < nums.size; i++)
-    // {
-    //     printf("%d - %f\n", i, nums.items[i]);
-    //     if (i < ops.size) {
-    //         printf("%d - %c\n", i, ops.items[i]);
-    //     }
-    // }
-
     float result = do_math(&nums, &ops);
 
     printf("Result of equation = %f\n", result);
@@ -82,13 +76,6 @@ int main() {
     return 0;
 }
 
-// 2+5^(4/(1+1))-4
-
-// 0123456789
-// 4/(1+1))-4
-
-// 0123456
-// 1+1))-4
 float do_parenthesis(string str, int* shift) {
     list_c ops = {0};
     list_f nums = {0};
@@ -107,7 +94,7 @@ float do_parenthesis(string str, int* shift) {
                 blockNegIdx = i;
                 isValidChar = true;
                 c = '+';
-            } else if (c == '+' || c == '*' || c == '/' || c == '^') {
+            } else if (c == '+' || c == '*' || c == '/' || c == '^' || c == 'v') {
                 isNextNegative = false;
                 isValidChar = true;
             } else if (c == '(') {
@@ -139,14 +126,6 @@ float do_parenthesis(string str, int* shift) {
         float val = c - '0';
         buffer = (buffer * 10 + val);
     }
-    
-    // printf("Numbers in parenthesis:\n");
-    // for (size_t i = 0; i < nums.size; i++)
-    // {
-    //     printf("%f\n", nums.items[i]);
-    // }
-    // float r = do_math(&nums, &ops);
-    // printf("Result of parenthesis: %f\n", r);
     return do_math(&nums, &ops);
 }
 
@@ -158,6 +137,18 @@ void power(list_f* nums, list_c* ops) {
         float v1 = list_f_take_at(nums, idx);
         float v2 = list_f_take_at(nums, idx);    
         r = pow(v1, v2);
+        list_f_insert_at(nums, idx, r);
+    }
+}
+
+void root(list_f* nums, list_c* ops) {
+    int idx;
+    while((idx = list_c_index_of(ops, 'v')) != -1) {
+        float r = 0;
+        list_c_take_at(ops, idx);
+        float v1 = list_f_take_at(nums, idx);
+        float v2 = list_f_take_at(nums, idx);
+        r = pow(v1, 1.0f / v2);
         list_f_insert_at(nums, idx, r);
     }
 }
@@ -199,6 +190,7 @@ void sum(list_f* nums, list_c* ops) {
 }
 
 float do_math(list_f* nums, list_c* ops) {
+    root(nums, ops);
     power(nums, ops);
     multiply(nums, ops);
     divide(nums, ops);
