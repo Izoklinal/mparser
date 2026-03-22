@@ -4,18 +4,25 @@
 #include "lib/aList/aList.h"
 #include "lib/aString/aString.h"
 
-void parse(char str[], list_f* l, list_c* ops);
+float do_parenthesis(string str, int* shift);
 void multiply(list_f* nums, list_c* ops);
 void divide(list_f* nums, list_c* ops);
 void sum(list_f* nums, list_c* ops);
-float domath(list_f* nums, list_c* ops);
+float do_math(list_f* nums, list_c* ops);
 
+// 012345678
 // 2*(3+4)-1
+//   ^
+// 
+// 012345
+// 3+4)-1
+//    ^
+// return i + 1
 
 int main() {
     list_f nums = {0};
     list_c ops = {0};
-    string source = string_init("2-2*(10+2)-2");
+    string source = string_init("2-2*(10+2)-4");
 
     int count_op = string_count_val(&source, '(');
     int count_cp = string_count_val(&source, ')');
@@ -45,7 +52,11 @@ int main() {
                 isValidChar = true;
             } else if (c == '(') {
                 string trimmed = string_trim_start(source, i + 1);
-                // here we gonna call a recursive function
+                int shift = 0;
+                float num = do_parenthesis(trimmed, &shift);
+                i += shift;
+                buffer = num;
+                c = '+';
             }
 
             if (isValidChar) {
@@ -63,39 +74,67 @@ int main() {
     }
     list_f_add(&nums, buffer);
 
-    for (size_t i = 0; i < nums.size; i++)
-    {
-        printf("%d - %f\n", i, nums.items[i]);
-    }
+    // for (size_t i = 0; i < nums.size; i++)
+    // {
+    //     printf("%d - %f\n", i, nums.items[i]);
+    // }
+
+    float result = do_math(&nums, &ops);
+
+    printf("Result of equation = %f", result);
 
     return 0;
 }
 
-void parse(char str[], list_f* nums, list_c* ops) {
-    float buf = 0;
-    float dir = 1;
-    for (size_t i = 0; i < strlen(str); i++)
+float do_parenthesis(string str, int* shift) {
+    list_c ops = {0};
+    list_f nums = {0};
+
+    float buffer = 0;
+    bool isNextNegative = false;
+    for (size_t i = 0; i < str.size; i++)
     {
-        if (!isdigit(str[i])) {
-            if (str[i] == '-') {
-                dir = -1;
-                continue;
-            } else {
-                dir = 1;
-                list_c_add(ops, str[i]);
+        (*shift)++;
+        char c = str.str[i];
+        if (!isdigit(c)) {
+            bool isValidChar = false;
+            if (isNextNegative) {
+                buffer *= -1.0f;
+                isNextNegative = false;
             }
-            list_f_add(nums, buf);
-            buf = 0;
+            if (c == '-') {
+                isNextNegative = true;
+                isValidChar = true;
+                c = '+';
+            } else if (c == '+' || c == '*' || c == '/') {
+                isNextNegative = false;
+                isValidChar = true;
+            } else if (c == '(') {
+                string trimmed = string_trim_start(str, i + 1);
+                float num = do_parenthesis(trimmed, shift);
+            } else if (c == ')') {
+                list_f_add(&nums, buffer);
+                break;
+            }
+
+            if (isValidChar) {
+                list_c_add(&ops, c);
+                list_f_add(&nums, buffer);
+                buffer = 0;
+            }
             continue;
         }
-        float vi = str[i] - '0';
-        buf = (buf * 10 + vi) * dir;
+        float val = c - '0';
+        buffer = (buffer * 10 + val);
     }
-    list_f_add(nums, buf);
-}
-
-void doparentheses(list_f* nums, list_c* ops) {
-
+    
+    // printf("Numbers in parenthesis:\n");
+    // for (size_t i = 0; i < nums.size; i++)
+    // {
+    //     printf("%f\n", nums.items[i]);
+    // }
+    
+    return do_math(&nums, &ops);
 }
 
 void multiply(list_f* nums, list_c* ops) {
@@ -134,7 +173,7 @@ void sum(list_f* nums, list_c* ops) {
     }
 }
 
-float domath(list_f* nums, list_c* ops) {
+float do_math(list_f* nums, list_c* ops) {
     multiply(nums, ops);
     divide(nums, ops);
     sum(nums, ops);
