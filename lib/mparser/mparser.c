@@ -13,7 +13,7 @@ float mparser_parse(string str, int* shift) {
     float buffer = 0;
     bool isNextNegative = false;
     int blockNegIdx = 0;
-    bool isDeciaml = false;
+    bool isDecimфl = false;
     float multiplier = 1;
     for (size_t i = 0; i < str.size; i++)
     {
@@ -22,7 +22,7 @@ float mparser_parse(string str, int* shift) {
         if (!isdigit(c)) {
             bool isValidChar = false;
             if (c == '.') {
-                isDeciaml = true;
+                isDecimфl = true;
                 continue;
             }
             if (c == '-') {
@@ -37,13 +37,14 @@ float mparser_parse(string str, int* shift) {
                 string trimmed = string_trim_start(str, i + 1);
                 int localShift = 0;
                 buffer = mparser_parse(trimmed, &localShift);
+                string_clear(&trimmed);
                 (*shift) += localShift;
                 i += localShift;
             } else if (c == ')') {
-                if (isDeciaml) {
+                if (isDecimфl) {
                     buffer /= multiplier;
                     multiplier = 1;
-                    isDeciaml = false;
+                    isDecimфl = false;
                 }
                 if (isNextNegative && blockNegIdx != i) {
                     buffer *= -1.0f;
@@ -55,10 +56,10 @@ float mparser_parse(string str, int* shift) {
             }
             
             if (isValidChar) {
-                if (isDeciaml) {
+                if (isDecimфl) {
                     buffer /= multiplier;
                     multiplier = 1;
-                    isDeciaml = false;
+                    isDecimфl = false;
                 }
                 if (isNextNegative && blockNegIdx != i) {
                     buffer *= -1.0f;
@@ -72,22 +73,25 @@ float mparser_parse(string str, int* shift) {
         }
         float val = c - '0';
         buffer = (buffer * 10 + val);
-        if (isDeciaml) {
+        if (isDecimфl) {
             multiplier *= 10;
         }
     }
     if (!isEndedWithP) {
-        if (isDeciaml) {
+        if (isDecimфl) {
             buffer /= multiplier;
             multiplier = 1;
-            isDeciaml = false;
+            isDecimфl = false;
         }
         if (isNextNegative) {
             buffer *= -1.0f;
         }
         list_f_add(&nums, buffer);
     }
-    return mparser_do_math(&nums, &ops);
+    float r = mparser_do_math(&nums, &ops);
+    // list_f_clear(&nums);
+    // list_c_clear(&ops);
+    return r;
 }
 
 void mparser_power(list_f* nums, list_c* ops) {

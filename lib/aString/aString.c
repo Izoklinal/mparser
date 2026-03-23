@@ -44,3 +44,11 @@ int string_count_val(string* str, char val) {
     }
     return count;
 }
+
+void string_clear(string* str) {
+    if (str) {
+        free(str->str);
+        str->str = NULL;
+        str->size = 0;
+    }
+}
