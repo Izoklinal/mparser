@@ -10,6 +10,16 @@ The string can contain any element, it will parse only allowed characters (besid
 * **+** — addition
 * **-** — subtract
 * **v** — square root (kinda looking like √, but is easier to write)
+* **.** — symbol for decimal part of a float number
+
+## Examples
+
+* *2^(1.5+1.5)=8*
+* *4v2=2*
+* *27v3=3*
+* *10^3=1000*
+* *2+2\*2=6*
+* *(2+2)\*2=8*
 
 ## Issues
 - This parser is unefficient because i'm shitty developer. It has a lot of duplication of code and maybe somewhere in future I will fix it

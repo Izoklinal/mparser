@@ -9,7 +9,7 @@
 int main() {
     list_f nums = {0};
     list_c ops = {0};
-    string source = string_init("2^(1.5+1.5)");
+    string source = string_init("(2+2)*2");
 
     int count_op = string_count_val(&source, '(');
     int count_cp = string_count_val(&source, ')');
