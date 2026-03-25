@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <math.h>
 
 #pragma region add
 int list_s_add(list_s *l, const char *val) {
@@ -22,7 +23,7 @@ int list_s_add(list_s *l, const char *val) {
 int list_c_add(list_c *l, char val) {
     if (l->size >= l->capacity) {
         size_t new_capacity = (l->capacity == 0) ? 4 : l->capacity * 2;
-        char *new_items     = realloc(l->items, new_capacity);
+        char *new_items     = realloc(l->items, new_capacity * sizeof(char));
         if (new_items == NULL) return 1;
         l->items    = new_items;
         l->capacity = new_capacity;
@@ -46,7 +47,7 @@ int list_i_add(list_i *l, int val) {
 int list_f_add(list_f *l, float val) {
     if (l->size >= l->capacity) {
         size_t new_capacity = (l->capacity == 0) ? 4 : l->capacity * 2;
-        float *new_items    = realloc(l->items, new_capacity);
+        float *new_items    = realloc(l->items, new_capacity * sizeof(float));
         if (new_items == NULL) return 1;
         l->items    = new_items;
         l->capacity = new_capacity;
@@ -250,19 +251,33 @@ float list_f_pop(list_f* l) {
 
 #pragma region shift
 char list_c_shift(list_c* l) {
+    if (l->size == 0) {
+        return '\n';
+    }
+    if (l->size == 1) {
+        return list_c_pop(l);
+    }
     char val = l->items[0];
-    if (l->size > 1) {
-        l->items = &l->items[1];
+    for (size_t i = 1; i < l->size; i++)
+    {
+        l->items[i - 1] = l->items[i];
     }
     l->size--;
+
     return val;
 }
 float list_f_shift(list_f* l) {
-    float val = l->items[0];
-    if (l->size > 1) {
-        l->items = &l->items[1];
+    if (l->size == 0) {
+        return NAN;
     }
-    l->size--;
+    if (l->size == 1) {
+        return list_f_pop(l);
+    }
+    float val = l->items[0];
+    for (size_t i = 1; i < l->size; i++)
+    {
+        l->items[i - 1] = l->items[i];
+    }
     return val;
 }
 #pragma endregion
@@ -298,15 +313,23 @@ char list_c_take_at(list_c* l, int idx) {
 
 #pragma region insert at
 void list_f_insert_at(list_f* l, int idx, float val) {
+    if (idx < 0 || idx > l->size) {
+        printf("Index could not be greater than size of lower than null");
+        return;
+    }
+    if (idx == l->size) {
+        list_f_add(l, val);
+        return;
+    }
     if (l->size >= l->capacity) {
         size_t new_capacity = (l->capacity == 0) ? 4 : l->capacity * 2;
-        float *new_items    = realloc(l->items, new_capacity);
+        float *new_items    = realloc(l->items, new_capacity * sizeof(float));
         if (new_items == NULL) return;
         l->items    = new_items;
         l->capacity = new_capacity;
     }
     l->size++;
-    for (size_t i = idx + 1; i < l->size; i++)
+    for (size_t i = l->size - 1; i > idx; i--)
     {
         l->items[i] = l->items[i - 1];
     }

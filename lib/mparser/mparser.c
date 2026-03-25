@@ -3,6 +3,7 @@
 #include "../aList/aList.h"
 #include <math.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <ctype.h>
 
 float mparser_parse(string str, int* shift) {
@@ -34,10 +35,11 @@ float mparser_parse(string str, int* shift) {
                 isNextNegative = false;
                 isValidChar = true;
             } else if (c == '(') {
-                string trimmed = string_trim_start(str, i + 1);
+                string trimmed = string_copy(str);
+                string_trim_start(&trimmed, i + 1);
                 int localShift = 0;
                 buffer = mparser_parse(trimmed, &localShift);
-                string_clear(&trimmed);
+                // string_clear(&trimmed);
                 (*shift) += localShift;
                 i += localShift;
             } else if (c == ')') {
@@ -89,8 +91,8 @@ float mparser_parse(string str, int* shift) {
         list_f_add(&nums, buffer);
     }
     float r = mparser_do_math(&nums, &ops);
-    // list_f_clear(&nums);
-    // list_c_clear(&ops);
+    list_f_clear(&nums);
+    list_c_clear(&ops);
     return r;
 }
 

@@ -1,9 +1,6 @@
 #include "aString.h"
 #include "string.h"
-
-// privet
-// 012356
-// size 6
+#include "stdio.h"
 
 string string_init(char* str) {
     string s = {
@@ -13,15 +10,19 @@ string string_init(char* str) {
     return s;
 }
 
-string string_trim_start(string str, int idx) {
-    string s = {0};
-    if (str.size - idx <= 0) {
-        s.size = 0;
-        return s;
+string string_copy(string str) {
+    char buf[str.size];
+    snprintf(buf, str.size + 1, "%s", str.str);
+    return string_init(buf);
+}
+
+void string_trim_start(string* str, int idx) {
+    if (str->size - idx <= 0) {
+        str->size = 0;
+        return;
     }
-    s.str = &str.str[idx];
-    s.size = str.size - idx;
-    return s;
+    str->str = &str->str[idx];
+    str->size = str->size - idx;
 }
 string string_trim_end(string str, int idx) {
     string s = {0};
